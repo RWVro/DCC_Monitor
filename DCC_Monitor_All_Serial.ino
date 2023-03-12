@@ -66,6 +66,5 @@ void loop()
     Serial.print(inByte);
     Serial.print(" ");
     Serial.println("");
-    return;
   }
 }
