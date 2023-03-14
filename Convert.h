@@ -1,12 +1,9 @@
 
-bool ok_4_8Code = true;
-bool no_4_8Code = false;
 
 bool test_4_8Code = true;
 bool test_4_8Decimal = true;
 
 int inByte;
-int convByte;
 
 //============================== 4-8 Table conversion ======================
 
