@@ -5,8 +5,6 @@
 //=============================  Board = ESP32 Dev Module (NodeMCU ESP32) =========================
 
 #define ONBOARD_LED 2
-#define RPWM 19                 // to RPWM MotorShield pin 1 & 4
-#define LPWM 18                 // to LPWM MotorShield pin 2 & 3
 
 #include "Convert.h"
 
@@ -14,10 +12,6 @@
 
 int railComRX = 16;          // GPIO16 Connected to RailCom Detector RX
 HardwareSerial Poort2(2);   // Define a Serial port instance called 'Poort2' using serial port 2
-
-int receivedChar;
-bool addressFlg = false;
-String addressStr;
 
 //================================= Setup =======================================
 
@@ -52,7 +46,7 @@ void setup()
   delay(1000);
 }
 
-//======================================= Main Program ==============================
+//======================================= Main Program ====================================
 
 void loop()
 {
@@ -70,22 +64,11 @@ void loop()
       return;
     }
     convert4_8ToDec();
-
-    if (addressFlg)
-    {
-      receivedChar = inByte;
-      addressStr = "Loco Address=" + String (receivedChar);
-      Serial.println(addressStr);
-      addressFlg = false;
-      receivedChar = 0;
-    }
+    FindAddress();
 
     if (test_4_8Decimal)                               // If valid decimal byte
     {
-      if (inByte == 8)                                // Find decimal 8
-      {
-        addressFlg = true;
-      }
+      SearchAddressCode();
     }
   }
 }
