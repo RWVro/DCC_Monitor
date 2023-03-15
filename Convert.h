@@ -5,7 +5,11 @@ bool test_4_8Decimal = true;
 
 int inByte;
 
-//============================== 4-8 Table conversion ======================
+int receivedChar;
+int addressCode;
+String addressStr;
+
+//============================== 4-8 Table conversion ================================
 
 int decodeArray[68] = {172, 170, 169, 165, 163, 166, 156, 154, 153, 149, 147, 150, 142, 141, 139, 177, 178, 180, 184, 116,
                        114, 108, 106, 105, 101, 99, 102, 92, 90, 89, 85, 83, 86, 78, 77, 75, 71, 113, 232, 228, 226, 209, 201,
@@ -53,4 +57,63 @@ void convert4_8ToDec()
     i++;
   }
   inByte = convertArray[i];
+}
+
+void SearchAddressCode()
+{
+  if (test_4_8Decimal)                               // If valid decimal byte
+  {
+    if (inByte == 8)                                // Find decimal 8
+    {
+      addressCode = 8;
+    }
+    if (inByte == 9)                                // Find decimal 9
+    {
+      addressCode = 9;
+    }
+    if (inByte == 10)                                // Find decimal 10
+    {
+      addressCode = 10;
+    }
+    if (inByte == 11)                                // Find decimal 11
+    {
+      addressCode = 11;
+    }
+  }
+}
+
+void FindAddress()
+{
+  if (addressCode == 8)
+  {
+    receivedChar = inByte;
+    addressStr = "Loco Address=" + String (receivedChar);
+    Serial.println(addressStr);
+    addressCode = 0;
+    receivedChar = 0;
+  }
+  if (addressCode == 9)
+  {
+    receivedChar = inByte + 64;
+    addressStr = "Loco Address=" + String (receivedChar);
+    Serial.println(addressStr);
+    addressCode = 0;
+    receivedChar = 0;
+  }
+  if (addressCode == 10)
+  {
+    receivedChar = inByte + 128;
+    addressStr = "Loco Address=" + String (receivedChar);
+    Serial.println(addressStr);
+    addressCode = 0;
+    receivedChar = 0;
+  }
+  if (addressCode == 11)
+  {
+    receivedChar = inByte + 192;
+    addressStr = "Loco Address=" + String (receivedChar);
+    Serial.println(addressStr);
+    addressCode = 0;
+    receivedChar = 0;
+  }
 }
