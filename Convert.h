@@ -1,19 +1,16 @@
 
 HardwareSerial Poort2(2);   // Define a Serial port instance called 'Poort2' using serial port 2
 
-hw_timer_t *CutoutTimer = NULL;
 bool cutoutCompl = false;
 int cutoutCnt = 1;;
-
-int receiveCnt = 0;
 int inByte = 0;
 
-const int rxFirstArrayMax = 13;
-int rxFirstArray[rxFirstArrayMax];    // [13] = char's
+const int rxFirstArrayMax = 8;
+int rxFirstArray[rxFirstArrayMax];        // [8] = char's
 int rxFirstArrayCnt = 0;
 
-const int rxSecondArrayMax = 13;
-int rxSecondArray[rxSecondArrayMax];    // [13] = char's
+const int rxSecondArrayMax = 8;
+int rxSecondArray[rxSecondArrayMax];      // [8] = char's
 int rxSecondArrayCnt = 0;
 
 bool findStartByteCO1 = false;
@@ -22,24 +19,7 @@ int addressInt;
 bool test_4_8Code = true;
 bool test_4_8Decimal = true;
 
-bool intStart = false;
-
-//=================================== Timer Cutout ====================================
-
-void IRAM_ATTR TestCutout()                                         // Cutout end
-{
-  cutoutCompl = true;
-}
-
-void IniCutoutTimer()                                               // Timer
-{
-  CutoutTimer = timerBegin(0, 80, true);
-  timerAttachInterrupt(CutoutTimer, &TestCutout, true);             // ISR = TestCutout
-  timerAlarmWrite(CutoutTimer, 470, false);                         // 470 microsec. (true = repeat)
-  timerAlarmEnable(CutoutTimer);                                    //Just Enable
-
-  cutoutCompl = false;
-}
+bool cutoutStart = false;
 
 //============================== 4-8 Table conversion ================================
 
@@ -91,14 +71,54 @@ void convert4_8ToDec()
   inByte = convertArray[i];
 }
 
+//===================================== Print array ===================================
+
+void printFirstArray()
+{
+  int i = 0;
+  while (i < rxFirstArrayMax)
+  {
+    if (rxFirstArray[i] == 65)
+    {
+      Serial.print("_");
+    }
+    else
+    {
+      Serial.print(rxFirstArray[i]);
+    }
+    Serial.print(" ");
+    i ++;
+  }
+  Serial.println("");
+}
+
+void printSecondArray()
+{
+  int i = 0;
+  while (i < rxSecondArrayMax)
+  {
+    if (rxSecondArray[i] == 65)
+    {
+      Serial.print("_");
+    }
+    else
+    {
+      Serial.print(rxSecondArray[i]);
+    }
+    Serial.print(" ");
+    i ++;
+  }
+  Serial.println("");
+}
+
 //======================================= Clear array ===================================
 
 void ClearrxFirstArray()
 {
   int i = 0;
-  while (i < rxFirstArrayMax - 1)
+  while (i < rxFirstArrayMax)
   {
-    rxFirstArray[i] = 0;
+    rxFirstArray[i] = 65;
     i ++;
   }
 }
@@ -106,9 +126,9 @@ void ClearrxFirstArray()
 void ClearrxSecondArray()
 {
   int i = 0;
-  while (i < rxSecondArrayMax - 1)
+  while (i < rxSecondArrayMax)
   {
-    rxSecondArray[i] = 0;
+    rxSecondArray[i] = 65;
     i ++;
   }
 }
@@ -1088,6 +1108,5 @@ void SearchAddressCode()
 void IRAM_ATTR GPIO15ToLow()
 {
   detachInterrupt(digitalPinToInterrupt(railComInt));
-  IniCutoutTimer();                                     // Start cutout timer one time
-  intStart = true;
+  cutoutStart = true;
 }
