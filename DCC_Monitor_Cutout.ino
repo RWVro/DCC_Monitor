@@ -62,37 +62,66 @@ void TestRailComInt()
   }
 }
 
+void GoCutout1()
+{
+  if (rxFirstArray[0] == 4 | rxFirstArray[0] == 6)
+  {
+    if (rxFirstArrayCnt != 0)
+    {
+      //printFirstArray();
+      cutoutCnt = 2;
+    }
+  }
+  rxFirstArrayCnt = 0;
+  cutoutStart = false;
+  attachInterrupt((railComInt), GPIO15ToLow, FALLING);
+}
+
+void GoCutout2()
+{
+  if (rxFirstArray[0] == 4 | rxFirstArray[0] == 6)
+  {
+    if (rxSecondArrayCnt != 0)
+    {
+      //printSecondArray();
+    }
+  }
+  SearchAddressCode();
+  cutoutCnt = 1;
+  ClearrxFirstArray();
+  rxFirstArrayCnt = 0;
+  ClearrxSecondArray();
+  rxSecondArrayCnt = 0;
+  cutoutStart = false;
+  attachInterrupt((railComInt), GPIO15ToLow, FALLING);
+}
+
 //======================================= Main Program ==============================
 
 void loop()
 {
   if (cutoutStart)
   {
-    if (cutoutCnt == 1)
+    while (Poort2.available())
     {
-      while (Poort2.available())
+      inByte = Poort2.read();             // Read byte
+      check_4_8Code();                    // Test if is 4_8Code
+
+      if (test_4_8Code)                   // If 4_8Code is ok
       {
-        inByte = Poort2.read();             // Read byte
-        check_4_8Code();                    // Test if is 4_8Code
+        convert4_8ToDec();                // Convert to decimal
 
-        if (test_4_8Code)                   // If 4_8Code is ok
+        if (test_4_8Decimal)
         {
-          convert4_8ToDec();                // Convert to decimal
-
-          if (test_4_8Decimal)
+          if (cutoutCnt == 1)
           {
-            if (!findStartByteCO1)
-            {
-              if (inByte == 4 | inByte == 6)                  // Find decimal 4 or 6
-              {
-                findStartByteCO1 = true;
-              }
-            }
-            if (findStartByteCO1)                             // Start saving bytes if rxFirstArray
-            {
-              rxFirstArray[rxFirstArrayCnt] = inByte;         // Byte into rxFirstArray
-              rxFirstArrayCnt ++;
-            }
+            rxFirstArray[rxFirstArrayCnt] = inByte;           // Byte into rxFirstArray
+            rxFirstArrayCnt ++;
+          }
+          if (cutoutCnt == 2)
+          {
+            rxSecondArray[rxSecondArrayCnt] = inByte;         // Byte into rxSecondArray
+            rxSecondArrayCnt ++;
           }
         }
       }
@@ -100,45 +129,15 @@ void loop()
 
     TestRailComInt();
 
-    if (cutoutCnt == 2)
+    if (cutoutCompl && cutoutCnt == 1)                        // Cutout1 stop
     {
-      while (Poort2.available())
-      {
-        inByte = Poort2.read();                             // Read byte
-        check_4_8Code();                                    // Test if is 4_8Code
-
-        if (test_4_8Code)                                   // If 4_8Code is ok
-        {
-          convert4_8ToDec();                                // Convet to decimal
-          if (test_4_8Decimal)
-          {
-            rxSecondArray[rxSecondArrayCnt] = inByte;      // Byte into rxSecondArray
-            rxSecondArrayCnt ++;
-          }
-        }
-      }
+      GoCutout1();
+      return;
     }
 
-    if (cutoutCompl)                                      // Cutout stop
+    if (cutoutCompl && cutoutCnt == 2)                      // Cutout2 stop
     {
-      if (findStartByteCO1)                               // Startbyte and first cutout find
-      {
-        cutoutCnt = 2;
-      }
-      if (!findStartByteCO1 && cutoutCnt == 2)
-      {
-        //printFirstArray();
-        //printSecondArray();
-        SearchAddressCode();
-        cutoutCnt = 1;
-        ClearrxFirstArray();
-        rxFirstArrayCnt = 0;
-        ClearrxSecondArray();
-        rxSecondArrayCnt = 0;
-      }
-      findStartByteCO1 = false;
-      cutoutStart = false;
-      attachInterrupt((railComInt), GPIO15ToLow, FALLING);
+      GoCutout2();
     }
   }
 }
